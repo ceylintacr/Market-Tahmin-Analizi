@@ -34,7 +34,7 @@ public class PreProcessor {
 
     public double[] donustur(UserRecord kayit) {
         if (!hazirMi) {
-            throw new IllegalStateException("PreProcessor must be trained with egit() before transformation.");
+            throw new IllegalStateException("PreProcessor veriyi önce egit() metodu ile eğitilmelidir.");
         }
 
         double genderEncoded = kayit.getGender().equalsIgnoreCase("Male") ? 1.0 : 0.0;

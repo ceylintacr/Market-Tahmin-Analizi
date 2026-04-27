@@ -13,10 +13,10 @@ public class KNNClassifier extends BaseAlgorithm {
 
     public KNNClassifier(int k, PreProcessor onIsleyici) {
         if (k <= 0) {
-            throw new IllegalArgumentException("k must be positive");
+            throw new IllegalArgumentException("k pozitif olmalıdır.");
         }
         if (onIsleyici == null) {
-            throw new IllegalArgumentException("PreProcessor cannot be null");
+            throw new IllegalArgumentException("PreProcessor null olamaz.");
         }
         this.k = k;
         this.onIsleyici = onIsleyici;
@@ -25,7 +25,7 @@ public class KNNClassifier extends BaseAlgorithm {
     @Override
     public void egit(List<UserRecord> hamEgitimVerisi) {
         if (hamEgitimVerisi == null || hamEgitimVerisi.isEmpty()) {
-            throw new IllegalArgumentException("Training data cannot be null or empty");
+            throw new IllegalArgumentException("Eğitim verisi null ya da boş olamaz.");
         }
 
         this.onIsleyici.egit(hamEgitimVerisi);
@@ -36,16 +36,17 @@ public class KNNClassifier extends BaseAlgorithm {
             this.islenmisEgitimVerisi.add(new ProcessedRecord(ozellikler, kullanici.getCategory()));
         }
 
-        System.out.println("[KNNClassifier] Trained on " + islenmisEgitimVerisi.size() + " records with k=" + k);
+        System.out.println(
+                "[KNNClassifier] " + islenmisEgitimVerisi.size() + " kayıt üzerinde k=" + k + " ile eğitildi.");
     }
 
     @Override
     public String predict(UserRecord kullanici) {
         if (islenmisEgitimVerisi == null || onIsleyici == null) {
-            throw new IllegalStateException("Classifier must be trained before prediction");
+            throw new IllegalStateException("Model tahminden önce eğitilmelidir.");
         }
         if (kullanici == null) {
-            throw new IllegalArgumentException("User cannot be null");
+            throw new IllegalArgumentException("Kullanıcı null olamaz.");
         }
 
         double[] ozellikler = onIsleyici.donustur(kullanici);
@@ -67,7 +68,7 @@ public class KNNClassifier extends BaseAlgorithm {
         return etiketSayilari.entrySet().stream()
                 .max(Map.Entry.comparingByValue())
                 .map(Map.Entry::getKey)
-                .orElse("Unknown");
+                .orElse("Belirsiz");
     }
 
     @Override
@@ -81,12 +82,12 @@ public class KNNClassifier extends BaseAlgorithm {
 
     @Override
     public String isimGetir() {
-        return "K-Nearest Neighbors (k=" + k + ")";
+        return "K-En Yakın Komşu (k=" + k + ")";
     }
 
     private double oklidMesafesiHesapla(double[] a, double[] b) {
         if (a.length != b.length) {
-            throw new IllegalArgumentException("Feature vectors must have same length");
+            throw new IllegalArgumentException("Özellik vektörleri aynı uzunlukta olmalıdır.");
         }
         double toplam = 0.0;
         for (int i = 0; i < a.length; i++) {
@@ -108,7 +109,7 @@ public class KNNClassifier extends BaseAlgorithm {
 
     public void setK(int k) {
         if (k <= 0) {
-            throw new IllegalArgumentException("k must be positive");
+            throw new IllegalArgumentException("k pozitif olmalıdır.");
         }
         this.k = k;
     }

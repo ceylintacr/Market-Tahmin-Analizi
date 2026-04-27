@@ -6,7 +6,6 @@ import classifier.KNNClassifier;
 import classifier.DecisionTreeClassifier;
 import evaluation.Evaluator;
 import model.UserRecord;
-
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.TitledBorder;
@@ -26,7 +25,6 @@ import classifier.IClassifier;
 
 public class MainFrame extends JFrame {
 
-    // --- UI Components ---
     private JButton btnLoadTrain;
     private JButton btnLoadTest;
     private JButton btnLoadAll;
@@ -59,50 +57,50 @@ public class MainFrame extends JFrame {
 
     private DynamicChartPanel chartPanel;
 
-    // --- Backend State ---
+    // Okunan veriler UserRecord nesneleri olarak saklanıyor
     private File dataFile;
     private List<UserRecord> allData;
     private List<UserRecord> trainData;
     private List<UserRecord> testData;
     private Evaluator evaluator;
 
-    // Performance Variables
+    // Algoritmaların süre ve performans değerleri
     private double knnDogruluk, dtDogruluk;
     private long knnTime, dtTime;
 
-    // For Single Mode Chart
+    // Grafikte kullanılan geçici değerler için değişkenler
     private Map<String, Integer> singleModeCorrect = new HashMap<>();
     private Map<String, Integer> singleModeWrong = new HashMap<>();
     private Evaluator.DegerlendirmeSonucu currentResult;
     private String currentAlgorithmName = "";
 
     public MainFrame() {
-        setTitle("Market Satış Tahmin Sistemi (Yapay Zeka Destekli)");
+        setTitle("Market Satış Tahmin Sistemi");
         setSize(1400, 850);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
         setLayout(new BorderLayout(15, 15));
         getContentPane().setBackground(Color.WHITE);
 
-        evaluator = new Evaluator();
+        evaluator = new Evaluator(); // Algoritma sonuçlarını değerlendirmek için nesne oluşturur.
         initUI();
     }
 
     private void initUI() {
-        // --- WEST PANEL (Controls) ---
+        // Soldaki kontrol paneli
         JPanel leftPanel = new JPanel();
         leftPanel.setLayout(new BoxLayout(leftPanel, BoxLayout.Y_AXIS));
         leftPanel.setPreferredSize(new Dimension(300, getHeight()));
         leftPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
         leftPanel.setBackground(Color.WHITE);
 
-        // 1. Data Management Panel
+        // Veri yükleme alanının oluşumu
         JPanel dataGroup = createGroupPanel("Veri Yönetimi");
-        
+
         btnLoadAll = createStyledButton("Tüm Veriyi Yükle", new Color(52, 152, 219));
-        btnLoadTrain = createStyledButton("Eğitim Seti Yükle", new Color(46, 204, 113));
-        btnLoadTest = createStyledButton("Test Seti Yükle", new Color(155, 89, 182));
-        
+        btnLoadTrain = createStyledButton("Eğitim Seti Yükle", new Color(255, 182, 193));
+        btnLoadTest = createStyledButton("Test Seti Yükle", new Color(255, 182, 193));
+
         lblDataPath = new JLabel("Dosya seçilmedi", SwingConstants.CENTER);
         lblDataPath.setFont(new Font("Segoe UI", Font.ITALIC, 11));
         lblDataPath.setForeground(Color.GRAY);
@@ -119,10 +117,10 @@ public class MainFrame extends JFrame {
         dataGroup.add(btnLoadTest);
         dataGroup.add(Box.createRigidArea(new Dimension(0, 10)));
         dataGroup.add(lblDataPath);
-        
+
         dataGroup.setMaximumSize(new Dimension(320, 200));
 
-        // 2. Split Panel
+        // Verileri bölmek için kullandığımız alan
         JPanel splitGroup = createGroupPanel("Veri Bölme");
 
         lblSplitStatus = new JLabel(" ", SwingConstants.CENTER);
@@ -130,7 +128,7 @@ public class MainFrame extends JFrame {
         lblSplitStatus.setForeground(Color.DARK_GRAY);
         lblSplitStatus.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        // Ratio Panel
+        // Oranları gösterdiğimiz alan
         JPanel ratioPanel = new JPanel(new GridBagLayout());
         ratioPanel.setOpaque(false);
         GridBagConstraints gbc = new GridBagConstraints();
@@ -139,10 +137,9 @@ public class MainFrame extends JFrame {
 
         gbc.gridx = 0;
         gbc.gridy = 0;
-        JLabel trLbl = new JLabel("Eğitim Verisi (%):");
+        JLabel trLbl = new JLabel("Eğitim Verisi (%):"); // Eğitim verisini için (%) alanı
         trLbl.setFont(new Font("Segoe UI", Font.BOLD, 13));
         ratioPanel.add(trLbl, gbc);
-
         gbc.gridx = 1;
         gbc.gridy = 0;
         trainRatioField = new JTextField("80", 3);
@@ -152,7 +149,7 @@ public class MainFrame extends JFrame {
 
         gbc.gridx = 0;
         gbc.gridy = 1;
-        JLabel teLbl = new JLabel("Test Verisi (%):");
+        JLabel teLbl = new JLabel("Test Verisi (%):"); // Test verisini için (%) alanı
         teLbl.setFont(new Font("Segoe UI", Font.BOLD, 13));
         ratioPanel.add(teLbl, gbc);
 
@@ -163,6 +160,7 @@ public class MainFrame extends JFrame {
         testRatioField.setFont(new Font("Segoe UI", Font.BOLD, 13));
         ratioPanel.add(testRatioField, gbc);
 
+        // Verileri böl butonu
         btnSplitData = createStyledButton("Verileri Böl", new Color(52, 152, 219));
         btnSplitData.setEnabled(false);
 
@@ -174,13 +172,13 @@ public class MainFrame extends JFrame {
 
         splitGroup.setMaximumSize(new Dimension(320, 200));
 
-        // 2. Algorithm & Parameters Combined
+        // Algoritma ve parametre alanı
         JPanel modelGroup = createGroupPanel("Algoritma Seçimi");
         rbKnn = createStyledRadio("K-En Yakın Komşu (KNN)");
         rbDt = createStyledRadio("Karar Ağacı (Decision Tree)");
         rbCompare = createStyledRadio("İkisini Karşılaştır");
-        rbCompare.setSelected(true);
 
+        // Algoritme parametrelerini dinamik gösterme
         knnContainer = new JPanel();
         knnContainer.setLayout(new BoxLayout(knnContainer, BoxLayout.Y_AXIS));
         knnContainer.setOpaque(false);
@@ -201,10 +199,11 @@ public class MainFrame extends JFrame {
         bg.add(rbDt);
         bg.add(rbCompare);
 
+        // KNN Parametre alanı
         paramKnnPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0));
         paramKnnPanel.setOpaque(false);
         paramKnnPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
-        paramKnnPanel.setBorder(new EmptyBorder(0, 25, 5, 0)); // Indent to align with radio text
+        paramKnnPanel.setBorder(new EmptyBorder(0, 25, 5, 0));
         JLabel knnLbl = new JLabel("KNN K Değeri: ");
         knnLbl.setForeground(Color.BLACK);
         knnLbl.setFont(new Font("Segoe UI", Font.BOLD, 13));
@@ -214,6 +213,7 @@ public class MainFrame extends JFrame {
         paramKnnPanel.add(knnLbl);
         paramKnnPanel.add(kValueField);
 
+        // Karar Ağacı Parametre alanı
         paramDtPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0));
         paramDtPanel.setOpaque(false);
         paramDtPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
@@ -227,7 +227,7 @@ public class MainFrame extends JFrame {
         paramDtPanel.add(dtLbl);
         paramDtPanel.add(maxDepthField);
 
-        // Add them interleaved
+        // Algoritma Seçimi grubuna bileşenlerin eklenmesi
         modelGroup.add(rbKnn);
         modelGroup.add(knnContainer);
         modelGroup.add(rbDt);
@@ -237,19 +237,18 @@ public class MainFrame extends JFrame {
 
         modelGroup.setMaximumSize(new Dimension(320, 230));
 
-        // 3. Results Section
+        // Sonuçların gösterildiği alan
         JPanel resultGroup = createGroupPanel("Sonuçlar");
-        lblGenelDogruluk = new JLabel("Genel Doğruluk: -", SwingConstants.CENTER);
-        lblGenelDogruluk.setFont(new Font("Segoe UI", Font.BOLD, 17)); // Daha büyük font
-        lblGenelDogruluk.setForeground(Color.BLACK);
+        lblGenelDogruluk = new JLabel("Accuracy: -", SwingConstants.CENTER);
+        lblGenelDogruluk.setFont(new Font("Segoe UI", Font.BOLD, 15));
         lblGenelDogruluk.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        lblExecutionTime = new JLabel("Tahmin Süresi: -", SwingConstants.CENTER);
+        lblExecutionTime = new JLabel("Tahmin Süresi(ms): -", SwingConstants.CENTER);
         lblExecutionTime.setFont(new Font("Segoe UI", Font.BOLD, 13));
         lblExecutionTime.setForeground(Color.DARK_GRAY);
         lblExecutionTime.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        lblMemoryUsage = new JLabel("Bellek Tüketimi: -", SwingConstants.CENTER);
+        lblMemoryUsage = new JLabel("Bellek Tüketimi(MB): -", SwingConstants.CENTER);
         lblMemoryUsage.setFont(new Font("Segoe UI", Font.BOLD, 13));
         lblMemoryUsage.setForeground(Color.DARK_GRAY);
         lblMemoryUsage.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -259,11 +258,11 @@ public class MainFrame extends JFrame {
         resultGroup.add(lblExecutionTime);
         resultGroup.add(Box.createRigidArea(new Dimension(0, 5)));
         resultGroup.add(lblMemoryUsage);
-        resultGroup.setMaximumSize(new Dimension(320, 115));
+        resultGroup.setMaximumSize(new Dimension(320, 150));
 
-        // 4. Run Button
+        // Modeli Çalıştır Butonu
         btnRunModel = createStyledButton("MODELİ ÇALIŞTIR", new Color(52, 152, 219));
-        btnRunModel.setEnabled(false);
+        btnRunModel.setEnabled(false); // Veriler hazır değilse enable
         btnRunModel.setMaximumSize(new Dimension(320, 45));
 
         leftPanel.add(dataGroup);
@@ -275,30 +274,30 @@ public class MainFrame extends JFrame {
         leftPanel.add(resultGroup);
         leftPanel.add(Box.createRigidArea(new Dimension(0, 15)));
         leftPanel.add(btnRunModel);
-        leftPanel.add(Box.createVerticalGlue());
+        leftPanel.add(Box.createVerticalGlue()); // Alt kısımda kalan boşluğu doldurur
 
-        // --- CENTER PANEL (Results) ---
+        // Tablo ve grafik için sağ panel
         JPanel rightPanel = new JPanel();
         rightPanel.setLayout(new BorderLayout(0, 15));
         rightPanel.setBorder(new EmptyBorder(15, 5, 15, 15));
         rightPanel.setOpaque(false);
 
-        // Chart
-        chartPanel = new DynamicChartPanel();
+        chartPanel = new DynamicChartPanel(); // Grafik oluştur
         chartPanel.setPreferredSize(new Dimension(getWidth(), 380));
         chartPanel.setBackground(Color.WHITE);
         chartPanel.setBorder(BorderFactory.createLineBorder(new Color(189, 195, 199), 1, true));
 
-        // Main Table
+        // Tablo
         tableModel = new DefaultTableModel(0, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
-                return false;
+                return false; // Tablo hücrelerinin elle değiştirilmesini engeller
             }
         };
         resultsTable = new JTable(tableModel);
         setupModernTable(resultsTable, false);
 
+        // Kaydırılabilir panel
         JScrollPane scrollPane = new JScrollPane(resultsTable);
         scrollPane.setBorder(BorderFactory.createTitledBorder("Kategori Bazlı Analiz"));
         scrollPane.getViewport().setBackground(Color.WHITE);
@@ -310,7 +309,7 @@ public class MainFrame extends JFrame {
         add(leftPanel, BorderLayout.WEST);
         add(rightPanel, BorderLayout.CENTER);
 
-        // Listeners
+        // Butona tıklandığında olayın gerçekleşmesi
         btnLoadAll.addActionListener(e -> selectAndLoadFile("all"));
         btnLoadTrain.addActionListener(e -> selectAndLoadFile("train"));
         btnLoadTest.addActionListener(e -> selectAndLoadFile("test"));
@@ -318,25 +317,30 @@ public class MainFrame extends JFrame {
             splitDataAuto();
             updateLoadStatus();
         });
-        btnRunModel.addActionListener(e -> executeModels());
+        btnRunModel.addActionListener(e -> executeModels()); // Seçili algoritmayı başlat
 
+        // Seçili olan algoritma değiştiğinde parametre görünürlüğünü günceller
         rbKnn.addActionListener(e -> updateParamVisibility());
         rbDt.addActionListener(e -> updateParamVisibility());
         rbCompare.addActionListener(e -> updateParamVisibility());
 
-        updateParamVisibility(); // Initialize visibility states correctly
+        updateParamVisibility();
 
-        // Table Selection Listener for Dynamic Error Pie Chart
+        // Pasta dilimi grafiği için tablodan satır seçilmesi olayı
         resultsTable.getSelectionModel().addListSelectionListener(e -> {
             if (!e.getValueIsAdjusting() && resultsTable.getSelectedRow() != -1 && !rbCompare.isSelected()) {
-                String category = (String) tableModel.getValueAt(resultsTable.getSelectedRow(), 0);
+                String category = (String) tableModel.getValueAt(resultsTable.getSelectedRow(), 0); // Seçili kategori
+                                                                                                    // adını al
                 if (currentResult != null && currentResult.hataMatrisi.containsKey(category)) {
-                    chartPanel.showCategoryErrorPie(category, currentResult.hataMatrisi.get(category));
+                    chartPanel.showCategoryErrorPie(category, currentResult.hataMatrisi.get(category)); // Pasta
+                                                                                                        // grafiğini
+                                                                                                        // güncelle
                 }
             }
         });
     }
 
+    // Başlığa sahip panel oluşturan metot
     private JPanel createGroupPanel(String title) {
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
@@ -350,6 +354,7 @@ public class MainFrame extends JFrame {
         return panel;
     }
 
+    // Algoritma seçimi için buton oluşturan metot
     private JRadioButton createStyledRadio(String text) {
         JRadioButton rb = new JRadioButton(text);
         rb.setFont(new Font("Segoe UI", Font.BOLD, 13));
@@ -360,6 +365,7 @@ public class MainFrame extends JFrame {
         return rb;
     }
 
+    // Modern ve renkli buton oluşturan metot
     private JButton createStyledButton(String text, Color bg) {
         JButton btn = new JButton(text);
         btn.setFont(new Font("Segoe UI", Font.BOLD, 14));
@@ -373,6 +379,7 @@ public class MainFrame extends JFrame {
         return btn;
     }
 
+    // Modern ve okunaklı tablo tasarlayan metot
     private void setupModernTable(JTable table, boolean showGrid) {
         table.setRowHeight(30);
         table.setShowGrid(showGrid);
@@ -383,10 +390,11 @@ public class MainFrame extends JFrame {
             table.setIntercellSpacing(new Dimension(0, 0));
         }
         table.setFont(new Font("Segoe UI", Font.BOLD, 14));
-        table.setForeground(new Color(44, 62, 80));
+        table.setForeground(new Color(44, 62, 80)); // Metin rengi koyu lacivert/gri
         table.setSelectionBackground(new Color(52, 152, 219));
-        table.setSelectionForeground(Color.WHITE);
+        table.setSelectionForeground(Color.WHITE); // Seçili satır arkaplanı ve font rengi: mavi/beyaz
 
+        // Tablo başlığı ayarları
         JTableHeader header = table.getTableHeader();
         header.setBackground(new Color(240, 240, 240));
         header.setForeground(Color.BLACK);
@@ -394,6 +402,7 @@ public class MainFrame extends JFrame {
         header.setPreferredSize(new Dimension(100, 40));
         header.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, Color.LIGHT_GRAY));
 
+        // Hücre içeriğini ortalayan ve satırları renklendiren renderer
         DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer() {
             @Override
             public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected,
@@ -401,7 +410,7 @@ public class MainFrame extends JFrame {
                 Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
                 if (!isSelected) {
                     c.setBackground(row % 2 == 0 ? Color.WHITE : new Color(248, 250, 252));
-                    c.setForeground(new Color(44, 62, 80)); // Standart Koyu Gri/Siyah
+                    c.setForeground(new Color(44, 62, 80));
                 }
                 c.setFont(new Font("Segoe UI", Font.PLAIN, 14));
                 setHorizontalAlignment(JLabel.CENTER);
@@ -412,6 +421,7 @@ public class MainFrame extends JFrame {
         table.setDefaultRenderer(Object.class, centerRenderer);
     }
 
+    // Seçilen algoritmaya göre ilgili parametre panellerini gösteren metod
     private void updateParamVisibility() {
         if (rbCompare.isSelected()) {
             compareParamsContainer.add(paramKnnPanel);
@@ -434,68 +444,76 @@ public class MainFrame extends JFrame {
         repaint();
     }
 
+    // Kullanıcının dosya seçmesini ve verinin arka planda yüklenmesini sağlayan
+    // metod
     private void selectAndLoadFile(String mode) {
         JFileChooser fileChooser = new JFileChooser(new File(System.getProperty("user.dir")));
         fileChooser.setDialogTitle("Excel Veri Dosyası Seçin");
         fileChooser.setFileFilter(new FileNameExtensionFilter("Excel Dosyaları", "xlsx", "xls"));
-        
+
         if (fileChooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
             File file = fileChooser.getSelectedFile();
             lblDataPath.setText("Son Seçilen: " + file.getName());
-            
+
+            // Arayüzün donmaması için işlemi thread de yap
             new Thread(() -> {
                 try {
                     DataLoader loader = new DataLoader();
                     List<UserRecord> loadedData = loader.load(file.getAbsolutePath());
-                    
+
+                    // Arayüz güncellemelerini ana thread de yap
                     SwingUtilities.invokeLater(() -> {
                         if (mode.equals("all")) {
                             allData = loadedData;
-                            btnSplitData.setEnabled(true);
-                            // splitDataAuto(); // Otomatik bölme kaldırıldı
+                            btnSplitData.setEnabled(true); // Verileri böl butonu aktif
                         } else if (mode.equals("train")) {
                             trainData = loadedData;
-                            allData = null; // Ayrı yüklemede allData geçersiz
+                            allData = null;
                             btnSplitData.setEnabled(false);
                         } else if (mode.equals("test")) {
                             testData = loadedData;
-                            allData = null; // Ayrı yüklemede allData geçersiz
+                            allData = null;
                             btnSplitData.setEnabled(false);
                         }
-                        
-                        updateLoadStatus();
-                        
-                        // Veri dağılımını göster
+
+                        updateLoadStatus(); // Durum yazısını güncelle
+
+                        // Yüklenen verideki kategori dağılımını hesapla
                         Map<String, Integer> distribution = new HashMap<>();
                         for (UserRecord r : loadedData) {
                             distribution.put(r.getCategory(), distribution.getOrDefault(r.getCategory(), 0) + 1);
                         }
-                        
-                        // ŞİMDİ KARIŞTIR (Shuffling)
+
                         Collections.shuffle(loadedData);
-                        
+
                         chartPanel.showDistribution(distribution);
                     });
                 } catch (Exception ex) {
+                    // Hata durumunda kullanıcıya mesaj göster
                     SwingUtilities.invokeLater(() -> {
-                        JOptionPane.showMessageDialog(this, "Hata: " + ex.getMessage(), "Yükleme Hatası", JOptionPane.ERROR_MESSAGE);
+                        JOptionPane.showMessageDialog(this, "Hata: " + ex.getMessage(), "Yükleme Hatası",
+                                JOptionPane.ERROR_MESSAGE);
                     });
                 }
             }).start();
         }
     }
 
+    // Yüklenen tüm veriyi belirtilen oranlara göre eğitim ve test olarak bölen
+    // metod
     private void splitDataAuto() {
         trainData = null;
         testData = null;
-        if (allData == null || allData.isEmpty()) return;
-        
+        if (allData == null || allData.isEmpty())
+            return;
+
         try {
             int trainRatio = Integer.parseInt(trainRatioField.getText());
             int testRatio = Integer.parseInt(testRatioField.getText());
 
-            if (trainRatio + testRatio != 100) {
-                JOptionPane.showMessageDialog(this, "Eğitim ve Test oranları toplamı 100 olmalıdır!", "Geçersiz Oran", JOptionPane.WARNING_MESSAGE);
+            if (trainRatio + testRatio != 100) { // Kontrol
+                JOptionPane.showMessageDialog(this, "Eğitim ve Test oranları toplamı 100 olmalıdır!", "Geçersiz Oran",
+                        JOptionPane.WARNING_MESSAGE);
                 return;
             }
 
@@ -503,7 +521,7 @@ public class MainFrame extends JFrame {
             int split = (int) (allData.size() * trainRatio / 100.0);
             trainData = new ArrayList<>(allData.subList(0, split));
             testData = new ArrayList<>(allData.subList(split, allData.size()));
-            
+
         } catch (NumberFormatException e) {
             JOptionPane.showMessageDialog(this, "Lütfen oranları sayısal girin.", "Hata", JOptionPane.ERROR_MESSAGE);
         }
@@ -517,19 +535,22 @@ public class MainFrame extends JFrame {
         status.append("Eğitim: ").append(trainData != null ? trainData.size() : 0).append("<br>");
         status.append("Test: ").append(testData != null ? testData.size() : 0).append("</div></html>");
         lblSplitStatus.setText(status.toString());
-        
+
         // Eğer hem eğitim hem test verisi varsa butonu aktif et
         btnRunModel.setEnabled(trainData != null && !trainData.isEmpty() && testData != null && !testData.isEmpty());
     }
 
+    // Bellek kullanımını ölçme
     private long getUsedMemoryMB() {
         Runtime rt = Runtime.getRuntime();
         return (rt.totalMemory() - rt.freeMemory()) / (1024 * 1024);
     }
 
     private void executeModels() {
+        // Veri setlerinin yüklü olup olmadığını kontrol eder
         if ((allData == null || allData.isEmpty()) && (trainData == null || testData == null)) {
-            JOptionPane.showMessageDialog(this, "Lütfen önce veri setini (Tümünü veya Eğitim/Test ayrı) yükleyin!", "Uyarı",
+            JOptionPane.showMessageDialog(this, "Lütfen önce veri setini (Tümünü veya Eğitim/Test ayrı) yükleyin!",
+                    "Uyarı",
                     JOptionPane.WARNING_MESSAGE);
             return;
         }
@@ -537,7 +558,8 @@ public class MainFrame extends JFrame {
         boolean isCompare = rbCompare.isSelected();
 
         if (isCompare) {
-            tableModel.setColumnIdentifiers(new String[] { "Kategori", "Destek", "KNN Doğru Tahmin", "DT Doğru Tahmin", "KNN Yanlış Tahmin", "DT Yanlış Tahmin", "KNN Doğruluk (%)", "DT Doğruluk (%)" });
+            tableModel.setColumnIdentifiers(new String[] { "Kategori", "Destek", "KNN Doğru Tahmin", "DT Doğru Tahmin",
+                    "KNN Yanlış Tahmin", "DT Yanlış Tahmin", "KNN Doğruluk (%)", "DT Doğruluk (%)" });
         } else {
             tableModel.setColumnIdentifiers(
                     new String[] { "Kategori", "Destek", "Doğru Tahmin", "Yanlış Tahmin", "Doğruluk (%)" });
@@ -551,34 +573,39 @@ public class MainFrame extends JFrame {
         singleModeCorrect.clear();
         singleModeWrong.clear();
 
+        // yeni iş parçacığı oluşturur
         new Thread(() -> {
             try {
-                System.gc(); // Bellek ölçümü öncesi temizlik tavsiyesi
+                System.gc();
                 long startMem = getUsedMemoryMB();
 
                 if (trainData == null || trainData.isEmpty() || testData == null || testData.isEmpty()) {
-                    SwingUtilities.invokeLater(() -> JOptionPane.showMessageDialog(this, "Lütfen önce verileri bölün veya yükleyin!", "Veri Eksik", JOptionPane.WARNING_MESSAGE));
+                    SwingUtilities.invokeLater(() -> JOptionPane.showMessageDialog(this,
+                            "Lütfen önce verileri bölün veya yükleyin!", "Veri Eksik", JOptionPane.WARNING_MESSAGE));
                     return;
                 }
 
                 Evaluator.DegerlendirmeSonucu resKNN = null;
                 Evaluator.DegerlendirmeSonucu resDT = null;
 
+                // POLİMORFİZİM KULLANIMI
                 List<IClassifier> models = new ArrayList<>();
                 if (rbKnn.isSelected() || isCompare) {
                     int k = Integer.parseInt(kValueField.getText());
                     models.add(new KNNClassifier(k, new PreProcessor()));
                 }
-                
+
                 if (rbDt.isSelected() || isCompare) {
                     int maksDerinlik = Integer.parseInt(maxDepthField.getText());
                     models.add(new DecisionTreeClassifier(new PreProcessor(), maksDerinlik));
                 }
 
+                // Model eğitimi ve test etme aşaması
                 for (IClassifier model : models) {
                     model.calismaSuresiniHesapla(trainData);
                     Evaluator.DegerlendirmeSonucu res = evaluator.degerlendir(model, testData);
-                    
+
+                    // Sonuçlar
                     if (model instanceof KNNClassifier) {
                         resKNN = res;
                         knnDogruluk = res.dogruluk;
@@ -597,17 +624,20 @@ public class MainFrame extends JFrame {
                 final Evaluator.DegerlendirmeSonucu finalResKNN = resKNN;
                 final Evaluator.DegerlendirmeSonucu finalResDT = resDT;
 
+                // Arayüz güncellemelerini ana thread yapma
                 SwingUtilities.invokeLater(() -> {
                     btnRunModel.setEnabled(true);
                     btnLoadAll.setEnabled(true);
                     btnLoadTrain.setEnabled(true);
                     btnLoadTest.setEnabled(true);
-                    
+
                     if (isCompare) {
                         extractMetricsCompare(finalResKNN, finalResDT);
-                        lblGenelDogruluk.setText(String.format("Doğruluk = KNN: %%%.1f | DT: %%%.1f",
+                        lblGenelDogruluk.setText(String.format(
+                                "<html><center>Genel Doğruluk<br>KNN: %%%.1f | DT: %%%.1f</center></html>",
                                 knnDogruluk * 100, dtDogruluk * 100));
-                        lblExecutionTime.setText(String.format("Süre: KNN %d ms | DT %d ms", knnTime, dtTime));
+                        lblExecutionTime.setText(String.format(
+                                "<html><center>Süre<br>KNN: %d ms | DT: %d ms</center></html>", knnTime, dtTime));
                         chartPanel.showComparison(knnDogruluk, knnTime, dtDogruluk, dtTime);
                     } else if (rbKnn.isSelected()) {
                         currentResult = finalResKNN;
@@ -615,7 +645,8 @@ public class MainFrame extends JFrame {
                         extractMetrics(finalResKNN);
                         lblGenelDogruluk.setText(String.format("Genel Doğruluk: %%%.1f", knnDogruluk * 100));
                         lblExecutionTime.setText(String.format("Tahmin Süresi: %d ms", knnTime));
-                        chartPanel.showSingleMode(singleModeCorrect, singleModeWrong, "KNN (K=" + kValueField.getText() + ")");
+                        chartPanel.showSingleMode(singleModeCorrect, singleModeWrong,
+                                "KNN (K=" + kValueField.getText() + ")");
                     } else {
                         currentResult = finalResDT;
                         currentAlgorithmName = "Decision Tree";
@@ -625,97 +656,116 @@ public class MainFrame extends JFrame {
                         chartPanel.showSingleMode(singleModeCorrect, singleModeWrong, "Karar Ağacı");
                     }
 
+                    // Bellek kullanımını yaz ve grafiği tazele
                     lblMemoryUsage.setText(String.format("Yaklaşık Bellek: %d MB", finalMemDiff));
                     chartPanel.revalidate();
                     chartPanel.repaint();
                 });
 
             } catch (NumberFormatException ex) {
+                // Sayı formatı hatası
                 SwingUtilities.invokeLater(() -> JOptionPane.showMessageDialog(this,
                         "Lütfen oranları ve parametreleri geçerli sayı olarak giriniz!", "Hata",
                         JOptionPane.ERROR_MESSAGE));
             } catch (Exception ex) {
+                // Diğer olası hatalar
                 SwingUtilities.invokeLater(
                         () -> JOptionPane.showMessageDialog(this, ex.getMessage(), "Hata", JOptionPane.ERROR_MESSAGE));
             }
-        }).start();
+        }).start(); // Tahmin sürecini başlat
     }
 
+    // Hata matrisinden sonuçları çekip tabloya ekleyen metot
     private void extractMetrics(Evaluator.DegerlendirmeSonucu res) {
-        Map<String, Map<String, Integer>> cm = res.hataMatrisi;
+        Map<String, Map<String, Integer>> cm = res.hataMatrisi; // Hata matrisini al
 
         java.util.List<String> categories = new java.util.ArrayList<>(res.kesinlik.keySet());
-        java.util.Collections.sort(categories); 
+        java.util.Collections.sort(categories);
 
         for (String category : categories) {
             if (!cm.containsKey(category))
                 continue;
 
+            // Doğru tahmin sayisini al
             int tp = cm.get(category).getOrDefault(category, 0);
-            int fn = 0;
+            int fn = 0; // Yanlış tahmin sayisini hesapla
 
+            // Diğer kategorilere yapılan yanlış tahminleri topla
             for (Map.Entry<String, Integer> entry : cm.get(category).entrySet()) {
                 if (!entry.getKey().equals(category)) {
                     fn += entry.getValue();
                 }
             }
-            int support = tp + fn;
+            int support = tp + fn; // Toplam test sayisi
 
+            // Kategori bazlı accuracy
             double catAcc = (support) == 0 ? 0 : ((double) tp / support) * 100.0;
             String accStr = String.format("%%% .1f", catAcc);
 
             singleModeCorrect.put(category, tp);
             singleModeWrong.put(category, fn);
+
+            // Tabloya yeni satır ekle
             tableModel.addRow(new Object[] { category, support, tp, fn, accStr });
         }
     }
 
+    // Karşılaştırma modunda iki modelin sonuçlarını aynı satırda birleştiren metod
     private void extractMetricsCompare(Evaluator.DegerlendirmeSonucu resKNN, Evaluator.DegerlendirmeSonucu resDT) {
         Map<String, Map<String, Integer>> cmKNN = resKNN.hataMatrisi;
         Map<String, Map<String, Integer>> cmDT = resDT.hataMatrisi;
 
+        // İki modeldeki tüm benzersiz kategorileri birleştir
         java.util.Set<String> allCategories = new java.util.HashSet<>();
         allCategories.addAll(resKNN.kesinlik.keySet());
         allCategories.addAll(resDT.kesinlik.keySet());
 
         java.util.List<String> categories = new java.util.ArrayList<>(allCategories);
-        java.util.Collections.sort(categories); 
+        java.util.Collections.sort(categories);
 
         for (String category : categories) {
+            // KNN için metrik hesaplama
             int tpKNN = cmKNN.containsKey(category) ? cmKNN.get(category).getOrDefault(category, 0) : 0;
             int fnKNN = 0;
             if (cmKNN.containsKey(category)) {
                 for (Map.Entry<String, Integer> entry : cmKNN.get(category).entrySet()) {
-                    if (!entry.getKey().equals(category)) fnKNN += entry.getValue();
+                    if (!entry.getKey().equals(category))
+                        fnKNN += entry.getValue();
                 }
             }
 
+            // DT için metrik hesaplama
             int tpDT = cmDT.containsKey(category) ? cmDT.get(category).getOrDefault(category, 0) : 0;
             int fnDT = 0;
             if (cmDT.containsKey(category)) {
                 for (Map.Entry<String, Integer> entry : cmDT.get(category).entrySet()) {
-                    if (!entry.getKey().equals(category)) fnDT += entry.getValue();
+                    if (!entry.getKey().equals(category))
+                        fnDT += entry.getValue();
                 }
             }
 
-            int support = tpKNN + fnKNN; // Test verisi ikisi için de aynıdır
-            
+            int support = tpKNN + fnKNN; // Test verisi her iki model için aynıdır
+
+            // Her iki algoritmanın kategori doğruluklarını hesapla
             double accKNN = (support) == 0 ? 0 : ((double) tpKNN / support) * 100.0;
             double accDT = (support) == 0 ? 0 : ((double) tpDT / support) * 100.0;
 
             String accStrKNN = String.format("%%% .1f", accKNN);
             String accStrDT = String.format("%%% .1f", accDT);
 
+            // Verileri karşılaştırmalı tabloya satır olarak ekle
             tableModel.addRow(new Object[] { category, support, tpKNN, tpDT, fnKNN, fnDT, accStrKNN, accStrDT });
         }
     }
 
-    // runKNN ve runDT metotları polymorphism ve for döngüsü ile executeModels() içerisinde birleştirildiği için silinmiştir.
-
-    // DİNAMİK GRAFİK PANELİ
+    // grafik paneli
     class DynamicChartPanel extends JPanel {
         enum ChartMode {
-            SINGLE, COMPARISON, DISTRIBUTION, PIE_ACCURACY, CATEGORY_ERROR_PIE
+            SINGLE,
+            COMPARISON,
+            DISTRIBUTION,
+            PIE_ACCURACY,
+            CATEGORY_ERROR_PIE
         }
 
         private ChartMode mode = ChartMode.COMPARISON;
@@ -727,8 +777,8 @@ public class MainFrame extends JFrame {
         private Map<String, Integer> correctMap = new HashMap<>();
         private Map<String, Integer> wrongMap = new HashMap<>();
         private String singleModelName = "";
-        private double currentAccuracy = 0;
-        private String selectedCategory = "";
+        private double currentAccuracy = 0; // Pasta grafiği için güncel doğruluk
+        private String selectedCategory = ""; // Detaylı hata grafiği için seçilen kategori
         private Map<String, Integer> categoryErrors = new HashMap<>();
         private JButton btnBack;
 
@@ -737,7 +787,8 @@ public class MainFrame extends JFrame {
             btnBack = createStyledButton("Ana Grafiğe Dön", new Color(44, 62, 80));
             btnBack.setBounds(20, 45, 150, 30);
             btnBack.setVisible(false);
-            btnBack.addActionListener(e -> {
+
+            btnBack.addActionListener(e -> { // Geri dön butonu için geri dönme olayı
                 if (!singleModeCorrect.isEmpty()) {
                     showSingleMode(singleModeCorrect, singleModeWrong, currentAlgorithmName);
                 }
@@ -750,16 +801,19 @@ public class MainFrame extends JFrame {
             this.correctMap = new HashMap<>(correct);
             this.wrongMap = new HashMap<>(wrong);
             this.singleModelName = modelName;
-            if (btnBack != null) btnBack.setVisible(false);
+            if (btnBack != null)
+                btnBack.setVisible(false); // Ana grafikte geri butonu gerekmez
             revalidate();
             repaint();
         }
 
+        // Pasta grafiği
         public void showCategoryErrorPie(String category, Map<String, Integer> errors) {
             this.mode = ChartMode.CATEGORY_ERROR_PIE;
             this.selectedCategory = category;
             this.categoryErrors = new HashMap<>(errors);
-            if (btnBack != null) btnBack.setVisible(true);
+            if (btnBack != null)
+                btnBack.setVisible(true); // Alt grafikte geri butonu gösterilir
             revalidate();
             repaint();
         }
@@ -779,6 +833,7 @@ public class MainFrame extends JFrame {
             repaint();
         }
 
+        // İki algoritmanın karşılaştırma grafiği
         public void showComparison(double kA, long kT, double dA, long dT) {
             this.mode = ChartMode.COMPARISON;
             this.kAcc = kA;
@@ -789,6 +844,7 @@ public class MainFrame extends JFrame {
             repaint();
         }
 
+        // Çizim yapılan ana metot
         @Override
         protected void paintComponent(Graphics g) {
             super.paintComponent(g);
@@ -801,6 +857,7 @@ public class MainFrame extends JFrame {
             int w = getWidth();
             int h = getHeight();
 
+            // Seçilen algoritmaya göre
             if (mode == ChartMode.COMPARISON) {
                 if (kTime > 0 || dTime > 0)
                     drawComparisonChart(g2d, w, h);
@@ -816,6 +873,7 @@ public class MainFrame extends JFrame {
             }
         }
 
+        //
         private void drawSingleModeChart(Graphics2D g2d, int w, int h) {
             g2d.setFont(new Font("Segoe UI", Font.BOLD, 18));
             g2d.setColor(new Color(44, 62, 80));
@@ -859,8 +917,6 @@ public class MainFrame extends JFrame {
                 Graphics2D gText = (Graphics2D) g2d.create();
                 FontMetrics fm = gText.getFontMetrics();
                 int textWidth = fm.stringWidth(cat);
-                // Yazının son harfini eksenin tam altına sabitleyip, kelimeyi geriye doğru
-                // (aşağı sola) çizdiriyoruz
                 gText.translate(xPos + barW, h - 110);
                 gText.rotate(-Math.PI / 4);
                 gText.drawString(cat, -textWidth, 5);
@@ -879,6 +935,7 @@ public class MainFrame extends JFrame {
             g2d.drawString("Yanlış Tahmin", 160, 58);
         }
 
+        // Veri seti dağılım bar grafiğini çizen metod
         private void drawDistributionChart(Graphics2D g2d, int w, int h) {
             g2d.setFont(new Font("Segoe UI", Font.BOLD, 18));
             g2d.setColor(new Color(44, 62, 80));
@@ -902,18 +959,20 @@ public class MainFrame extends JFrame {
             int xPos = 80;
             g2d.setFont(new Font("Segoe UI", Font.BOLD, 12));
             List<String> sortedKeys = new ArrayList<>(distributionMap.keySet());
-            Collections.sort(sortedKeys);
+            Collections.sort(sortedKeys); // Kategorileri sıralı göster
 
             for (String cat : sortedKeys) {
                 int count = distributionMap.get(cat);
                 int bHeight = (int) (((double) count / maxVal) * maxBarHeight);
 
+                // Mavi çubuklar
                 g2d.setColor(new Color(52, 152, 219));
                 g2d.fillRoundRect(xPos, h - 120 - bHeight, barW, bHeight, 8, 8);
 
                 g2d.setColor(Color.DARK_GRAY);
                 g2d.drawString(String.valueOf(count), xPos + (barW / 4), h - 125 - bHeight);
 
+                // Eğik kategori isimleri
                 g2d.setColor(Color.BLACK);
                 Graphics2D gText = (Graphics2D) g2d.create();
                 FontMetrics fm = gText.getFontMetrics();
@@ -927,6 +986,7 @@ public class MainFrame extends JFrame {
             }
         }
 
+        // Genel pasta grafiğini çizen metod
         private void drawPieChart(Graphics2D g2d, int w, int h, double accuracy) {
             g2d.setFont(new Font("Segoe UI", Font.BOLD, 18));
             g2d.setColor(new Color(44, 62, 80));
@@ -936,18 +996,19 @@ public class MainFrame extends JFrame {
             int x = (w - size) / 2;
             int y = (h - size) / 2 + 20;
 
+            // Pasta grafiğine göre açı hesabı
             int accAngle = (int) (accuracy * 360);
             int errAngle = 360 - accAngle;
 
-            // Doğruluk Dilimi
+            // Mavi Dilim (Doğruluk)
             g2d.setColor(new Color(52, 152, 219));
             g2d.fillArc(x, y, size, size, 0, accAngle);
 
-            // Hata Dilimi
+            // Kırmızı Dilim (Hata)
             g2d.setColor(new Color(231, 76, 60));
             g2d.fillArc(x, y, size, size, accAngle, errAngle);
 
-            // Legend
+            // Bilgilendirme Kutuları
             g2d.setFont(new Font("Segoe UI", Font.BOLD, 14));
             g2d.setColor(new Color(52, 152, 219));
             g2d.fillRect(20, 60, 15, 15);
@@ -960,11 +1021,13 @@ public class MainFrame extends JFrame {
             g2d.drawString(String.format("Hata Oranı: %%%.1f", (1 - accuracy) * 100), 40, 98);
         }
 
+        // Seçili kategorinin hata dağılımını yapan metot
         private void drawCategoryErrorPie(Graphics2D g2d, int w, int h) {
             g2d.setFont(new Font("Segoe UI", Font.BOLD, 18));
             g2d.setColor(new Color(44, 62, 80));
             g2d.drawString(selectedCategory + " Kategorisi - Hata Dağılım Analizi", 20, 30);
 
+            // Seçili kategori için toplam hata sayisini bulma
             int totalErrors = 0;
             for (Map.Entry<String, Integer> e : categoryErrors.entrySet()) {
                 if (!e.getKey().equals(selectedCategory)) {
@@ -972,10 +1035,11 @@ public class MainFrame extends JFrame {
                 }
             }
 
+            // Hata yoksa;
             if (totalErrors == 0) {
                 g2d.setFont(new Font("Segoe UI", Font.BOLD, 24));
-                g2d.setColor(new Color(39, 174, 96));
-                g2d.drawString("MÜKEMMEL TAHMİN: HATA BULUNAMADI!", w / 4, h / 2);
+                g2d.setColor(Color.BLACK);
+                g2d.drawString("Hatasız tahmin yapıldı.", w / 4, h / 2);
                 return;
             }
 
@@ -984,31 +1048,34 @@ public class MainFrame extends JFrame {
             int y = (h - size) / 2 + 30;
 
             int startAngle = 0;
+            // Her farklı kategorideki hata için farklı renk
             Color[] colors = { new Color(231, 76, 60), new Color(241, 196, 15), new Color(155, 89, 182),
-                               new Color(52, 152, 219), new Color(230, 126, 34), new Color(149, 165, 166) };
+                    new Color(52, 152, 219), new Color(230, 126, 34), new Color(149, 165, 166) };
             int cIdx = 0;
 
             int legendY = 100;
             g2d.setFont(new Font("Segoe UI", Font.BOLD, 13));
 
             for (Map.Entry<String, Integer> e : categoryErrors.entrySet()) {
-                if (e.getKey().equals(selectedCategory) || e.getValue() == 0) continue;
+                if (e.getKey().equals(selectedCategory) || e.getValue() == 0)
+                    continue;
 
                 int angle = (int) Math.round(((double) e.getValue() / totalErrors) * 360);
                 g2d.setColor(colors[cIdx % colors.length]);
                 g2d.fillArc(x, y, size, size, startAngle, angle);
 
-                // Legend
+                // Yan tarafa lgend ekleme
                 g2d.fillRect(w - 200, legendY, 15, 15);
                 g2d.setColor(Color.BLACK);
                 g2d.drawString(e.getKey() + " (" + e.getValue() + ")", w - 180, legendY + 12);
-                
+
                 startAngle += angle;
                 cIdx++;
                 legendY += 25;
             }
         }
 
+        // İki algoritmayı karşılaştırma grafiklerinin çizimi
         private void drawComparisonChart(Graphics2D g2d, int w, int h) {
             g2d.setFont(new Font("Segoe UI", Font.BOLD, 18));
             g2d.setColor(new Color(44, 62, 80));
@@ -1020,22 +1087,27 @@ public class MainFrame extends JFrame {
             int maxBarHeight = h - 200;
             int barW = 80;
 
+            // KNN doğruluk mavi
             g2d.setColor(new Color(52, 152, 219));
             int knnAccH = (int) (kAcc * maxBarHeight);
             g2d.fillRoundRect(w / 4 - 40, h - 120 - knnAccH, barW, knnAccH, 10, 10);
 
+            // KNN süre mor
             g2d.setColor(new Color(155, 89, 182));
-            int knnTimeH = (int) Math.min(maxBarHeight, kTime * 2);
+            int knnTimeH = (int) Math.min(maxBarHeight, kTime * 2); // Süre ölçeği için 2 ile çarpıldı
             g2d.fillRoundRect(w / 4 + 50, h - 120 - knnTimeH, barW, knnTimeH, 10, 10);
 
+            // Karar agaci mavi
             g2d.setColor(new Color(52, 152, 219));
             int dtAccH = (int) (dAcc * maxBarHeight);
             g2d.fillRoundRect(w * 3 / 4 - 130, h - 120 - dtAccH, barW, dtAccH, 10, 10);
 
+            // Karar agacı mor
             g2d.setColor(new Color(155, 89, 182));
             int dtTimeH = (int) Math.min(maxBarHeight, dTime * 2);
             g2d.fillRoundRect(w * 3 / 4 - 40, h - 120 - dtTimeH, barW, dtTimeH, 10, 10);
 
+            // değerleri sütunların üzerine yazdırma
             g2d.setFont(new Font("Segoe UI", Font.BOLD, 14));
             g2d.setColor(Color.DARK_GRAY);
 
@@ -1047,6 +1119,7 @@ public class MainFrame extends JFrame {
             g2d.drawString(dTime + " ms", w * 3 / 4 - 30, h - 125 - dtTimeH);
             g2d.drawString("Karar Ağacı", w * 3 / 4 - 90, h - 95);
 
+            // Grafik bilgileri
             g2d.setFont(new Font("Segoe UI", Font.BOLD, 12));
             g2d.setColor(new Color(52, 152, 219));
             g2d.fillRect(20, 45, 15, 15);
@@ -1059,11 +1132,14 @@ public class MainFrame extends JFrame {
         }
     }
 
+    // Main metot
     public static void main(String[] args) {
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         } catch (Exception ignored) {
         }
+
+        // Ana penceriyi oluştur ve aktif yap
         SwingUtilities.invokeLater(() -> new MainFrame().setVisible(true));
     }
 }

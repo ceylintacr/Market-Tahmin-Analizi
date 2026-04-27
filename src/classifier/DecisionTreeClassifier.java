@@ -13,10 +13,10 @@ public class DecisionTreeClassifier extends BaseAlgorithm {
 
     public DecisionTreeClassifier(PreProcessor onIsleyici, int maksDerinlik) {
         if (onIsleyici == null) {
-            throw new IllegalArgumentException("PreProcessor cannot be null");
+            throw new IllegalArgumentException("PreProcessor null olamaz");
         }
         if (maksDerinlik <= 0) {
-            throw new IllegalArgumentException("maksDerinlik must be positive");
+            throw new IllegalArgumentException("maksDerinlik pozitif olmalıdır");
         }
         this.onIsleyici = onIsleyici;
         this.maksDerinlik = maksDerinlik;
@@ -25,7 +25,7 @@ public class DecisionTreeClassifier extends BaseAlgorithm {
     @Override
     public void egit(List<UserRecord> hamEgitimVerisi) {
         if (hamEgitimVerisi == null || hamEgitimVerisi.isEmpty()) {
-            throw new IllegalArgumentException("Training data cannot be null or empty");
+            throw new IllegalArgumentException("Eğitim verisi null ya da boş olamaz");
         }
 
         this.onIsleyici.egit(hamEgitimVerisi);
@@ -42,7 +42,7 @@ public class DecisionTreeClassifier extends BaseAlgorithm {
     @Override
     public String predict(UserRecord kullanici) {
         if (kokDugum == null || onIsleyici == null) {
-            throw new IllegalStateException("Classifier must be trained before prediction");
+            throw new IllegalStateException("Model tahminden önce eğitilmelidir.");
         }
 
         double[] ozellikler = onIsleyici.donustur(kullanici);
