@@ -445,7 +445,7 @@ public class MainFrame extends JFrame {
     }
 
     // Kullanıcının dosya seçmesini ve verinin arka planda yüklenmesini sağlayan
-    // metod
+    // metot
     private void selectAndLoadFile(String mode) {
         JFileChooser fileChooser = new JFileChooser(new File(System.getProperty("user.dir")));
         fileChooser.setDialogTitle("Excel Veri Dosyası Seçin");
@@ -458,6 +458,7 @@ public class MainFrame extends JFrame {
             // Arayüzün donmaması için işlemi thread de yap
             new Thread(() -> {
                 try {
+                    // Excel dosyasını okuyup -> UserRecord kapsüllenmiş nesnelerine dönüştürür.
                     DataLoader loader = new DataLoader();
                     List<UserRecord> loadedData = loader.load(file.getAbsolutePath());
 

@@ -7,6 +7,7 @@ public class UserRecord {
     private String brand;
     private String category;
 
+    // PDF --> veriler nesne oluşturulurken Constructor aracılığıyla atanmalıdır.
     public UserRecord(String clientCode, String gender, double lineNetTotal, String brand, String category) {
         this.clientCode = clientCode;
         this.gender = gender;
@@ -19,40 +20,20 @@ public class UserRecord {
         return clientCode;
     }
 
-    public void setClientCode(String clientCode) {
-        this.clientCode = clientCode;
-    }
-
     public String getGender() {
         return gender;
-    }
-
-    public void setGender(String gender) {
-        this.gender = gender;
     }
 
     public double getLineNetTotal() {
         return lineNetTotal;
     }
 
-    public void setLineNetTotal(double lineNetTotal) {
-        this.lineNetTotal = lineNetTotal;
-    }
-
     public String getBrand() {
         return brand;
     }
 
-    public void setBrand(String brand) {
-        this.brand = brand;
-    }
-
     public String getCategory() {
         return category;
-    }
-
-    public void setCategory(String category) {
-        this.category = category;
     }
 
     @Override
