@@ -42,7 +42,3 @@ Eğitim ve test işlemleri için veri seti **%80 Eğitim (Train)** ve **%20 Test
 4. Arayüz üzerinden `.xlsx` formatındaki satış verisini sisteme yükleyin (Eğitim ve Test verilerini toplu veya ayrı ayrı yükleyebilirsiniz).
 5. Kullanmak istediğiniz algoritmayı (KNN veya Karar Ağacı) ve parametrelerini (KNN için komşu sayısı, Karar Ağacı için derinlik sınırı vb.) belirleyin.
 6. Model eğitimini başlatın ve test sonuçlarını, çalışma sürelerini ve grafikleri arayüz üzerinden analiz edin.
-"""
-with open('/mnt/data/README.md', 'w', encoding='utf-8') as f:
-    f.write(readme_content)
-print("README.md created successfully.")
